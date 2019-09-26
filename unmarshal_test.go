@@ -1,12 +1,14 @@
 package environ
 
 import (
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestKitchenSink(t *testing.T) {
+func TestUnmarshalKitchenSink(t *testing.T) {
 
 	type addrType int
 	const addrHome = 0
@@ -55,7 +57,7 @@ func TestKitchenSink(t *testing.T) {
 		env = append(env, k+"="+v)
 	}
 
-	err := UnmarshalEnv(out, env, "")
+	err := UnmarshalEnv(out, env)
 	if err != nil {
 		t.Fatalf("err: %v\n", err)
 	}
@@ -99,7 +101,107 @@ func TestKitchenSink(t *testing.T) {
 	require.Equal(arr, out.ArrList)
 
 	// now, reverse it
-	ret, err := MarshalEnv(out, "")
+	ret, err := MarshalEnv(out)
 	require.Nil(err)
 	require.ElementsMatch(env, ret)
+}
+
+func TestUnmarshalEnv(t *testing.T) {
+
+	env := []string{
+		"ADDR=localhost",
+		"PORT=8080",
+	}
+	conf := &struct {
+		Addr string
+		Port int
+	}{}
+	err := UnmarshalEnv(conf, env)
+
+	require := require.New(t)
+
+	require.Nil(err)
+	require.Equal("localhost", conf.Addr)
+	require.Equal(8080, conf.Port)
+}
+
+func TestUnmarshalEnvPfx(t *testing.T) {
+
+	env := []string{
+		"_PFX_ADDR=localhost",
+		"_PFX_PORT=8080",
+	}
+	conf := &struct {
+		Addr string
+		Port int
+	}{}
+	err := UnmarshalEnvPfx(conf, env, "_PFX_")
+
+	fmt.Printf("Host: %s:%d\n", conf.Addr, conf.Port)
+
+	require := require.New(t)
+
+	require.Nil(err)
+	require.Equal("localhost", conf.Addr)
+	require.Equal(8080, conf.Port)
+}
+
+func TestUnmarshalEnviron(t *testing.T) {
+
+	os.Clearenv()
+	os.Setenv("ADDR", "localhost")
+	os.Setenv("PORT", "8080")
+
+	conf := &struct {
+		Addr string
+		Port int
+	}{}
+	err := UnmarshalEnviron(conf)
+
+	require := require.New(t)
+
+	require.Nil(err)
+	require.Equal("localhost", conf.Addr)
+	require.Equal(8080, conf.Port)
+	require.Len(os.Environ(), 2)
+}
+
+func TestUnmarshalEnvironUnset(t *testing.T) {
+
+	os.Clearenv()
+	os.Setenv("ADDR", "localhost")
+	os.Setenv("PORT", "8080")
+
+	conf := &struct {
+		Addr string
+		Port int
+	}{}
+	err := UnmarshalEnvironAndUnset(conf)
+
+	require := require.New(t)
+
+	require.Nil(err)
+	require.Equal("localhost", conf.Addr)
+	require.Equal(8080, conf.Port)
+	require.Len(os.Environ(), 0)
+}
+
+func TestUnmarshalEnvironPfxUnset(t *testing.T) {
+
+	os.Clearenv()
+	os.Setenv("_PFX_ADDR", "localhost")
+	os.Setenv("_PFX_PORT", "8080")
+
+	conf := &struct {
+		Addr string
+		Port int
+	}{}
+	err := UnmarshalEnvironPfxAndUnset(conf, "_PFX_")
+
+	require := require.New(t)
+
+	require.Nil(err)
+	require.Equal("localhost", conf.Addr)
+	require.Equal(8080, conf.Port)
+	require.Len(os.Environ(), 0)
 }

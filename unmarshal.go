@@ -68,30 +68,95 @@ func newEnvMap(env []string, pfx string) *envMap {
 		if idx == -1 {
 			continue
 		}
-		if strings.HasPrefix(e[:idx], pfx) {
-			key := strings.TrimPrefix(e[:idx], pfx)
-			out.data[key] = e[idx+1:]
-			out.left[key] = e[idx+1:]
+		key := e[:idx]
+		val := e[idx+1:]
+		if strings.HasPrefix(key, pfx) {
+			key := strings.TrimPrefix(key, pfx)
+			out.data[key] = val
+			out.left[key] = val
 		}
 	}
 	return out
 }
 
-func UnmarshalEnv(i interface{}, env []string, pfx string) error {
+// UnmarshalEnv unmarshal env to map or struct
+func UnmarshalEnv(i interface{}, env []string) error {
+	m := newEnvMap(env, "")
+	return unmarshal(i, m, "")
+}
+
+// UnmarshalEnvAndUnset unmarshal env to map or struct and unset environment variables
+func UnmarshalEnvAndUnset(i interface{}, env []string) error {
+	m := newEnvMap(env, "")
+	err := unmarshal(i, m, "")
+	if err != nil {
+		return err
+	}
+	return m.UnsetEnv()
+}
+
+// UnmarshalEnvPfx unmarshal env prefixed with pfx to map or struct
+func UnmarshalEnvPfx(i interface{}, env []string, pfx string) error {
+	m := newEnvMap(env, pfx)
+	return unmarshal(i, m, pfx)
+}
+
+// UnmarshalEnvPfxAndUnset unmarshal env prefixed with pfx to map or struct and unset environment variables
+func UnmarshalEnvPfxAndUnset(i interface{}, env []string, pfx string) error {
+	m := newEnvMap(env, pfx)
+	err := unmarshal(i, m, pfx)
+	if err != nil {
+		return err
+	}
+	return m.UnsetEnv()
+}
+
+// UnmarshalEnviron unmarshal os environment to map or struct
+func UnmarshalEnviron(i interface{}) error {
+	m := newEnvMap(os.Environ(), "")
+	return unmarshal(i, m, "")
+}
+
+// UnmarshalEnvironAndUnset unmarshal os environment to map or struct and unset environment variables
+func UnmarshalEnvironAndUnset(i interface{}) error {
+	m := newEnvMap(os.Environ(), "")
+	err := unmarshal(i, m, "")
+	if err != nil {
+		return err
+	}
+	return m.UnsetEnv()
+}
+
+// UnmarshalEnvironPfx unmarshal os environment prefixed with pfx to map or struct
+func UnmarshalEnvironPfx(i interface{}, pfx string) error {
+	m := newEnvMap(os.Environ(), pfx)
+	return unmarshal(i, m, pfx)
+}
+
+// UnmarshalEnvironPfxAndUnset unmarshal os environment prefixed with pfx to map or struct and unset environment variables
+func UnmarshalEnvironPfxAndUnset(i interface{}, pfx string) error {
+	m := newEnvMap(os.Environ(), pfx)
+	err := unmarshal(i, m, pfx)
+	if err != nil {
+		return err
+	}
+	return m.UnsetEnv()
+}
+
+func unmarshal(i interface{}, m *envMap, pfx string) error {
 	t := reflect.TypeOf(i)
 	v := reflect.ValueOf(i)
 	if !isPtr(t) {
 		return errors.New("i must be a pointer")
 	}
-	m := newEnvMap(env, pfx)
 	switch t.Elem().Kind() {
 	case reflect.Struct:
 		return unmarshalStruct(v, m, "")
 	case reflect.Map:
 		return unmarshalMap(v, m, "")
+	default:
+		return errors.New("not struct or map")
 	}
-
-	return errors.New("not struct or map")
 }
 
 func unmarshalStruct(v reflect.Value, env *envMap, name string) error {

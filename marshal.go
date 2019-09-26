@@ -5,19 +5,85 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"unicode"
 )
 
-func MarshalEnv(i interface{}, pfx string) (out []string, err error) {
+// MarshalEnv marshals input map or struct to a string slice of form key=value
+func MarshalEnv(i interface{}) (out []string, err error) {
+	return marshal(i, "")
+}
 
+// MarshalEnvMap marshals input map or struct to a map
+func MarshalEnvMap(i interface{}) (m map[string]string, err error) {
+	m = map[string]string{}
+	env, err := marshal(i, "")
+	for _, e := range env {
+		idx := strings.Index(e, "=")
+		key := e[:idx]
+		val := e[idx+1:]
+		m[key] = val
+	}
+	return
+}
+
+// MarshalEnvAndSet marshals input map or struct and the sets all values to the environment
+func MarshalEnvAndSet(i interface{}) error {
+	m, err := MarshalEnvMap(i)
+	if err != nil {
+		return err
+	}
+	for k, v := range m {
+		err = os.Setenv(k, v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// MarshalEnvPfx marshals input map or struct to a string slice of form key=value. the keys are prefixed with pfx.
+func MarshalEnvPfx(i interface{}, pfx string) (out []string, err error) {
+	return marshal(i, pfx)
+}
+
+// MarshalEnvMapPfx marshals input map or struct to a map. the keys are prefixed with pfx.
+func MarshalEnvMapPfx(i interface{}, pfx string) (m map[string]string, err error) {
+	m = map[string]string{}
+	env, err := marshal(i, pfx)
+	for _, e := range env {
+		idx := strings.Index(e, "=")
+		key := e[:idx]
+		val := e[idx+1:]
+		m[key] = val
+	}
+	return
+}
+
+// MarshalEnvPfxAndSet marshals input map or struct and the sets all values to the environment. the keys are prefixed with pfx.
+func MarshalEnvPfxAndSet(i interface{}, pfx string) error {
+	m, err := MarshalEnvMapPfx(i, pfx)
+	if err != nil {
+		return err
+	}
+	for k, v := range m {
+		err = os.Setenv(k, v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func marshal(i interface{}, pfx string) (out []string, err error) {
 	t := reflect.TypeOf(i)
 	v := reflect.ValueOf(i)
 
 	if !isPtr(t) {
-		panic("i should be a pointer. try with &")
+		return nil, errors.New("i must be a pointer")
 	}
 
 	// dereference
@@ -26,9 +92,9 @@ func MarshalEnv(i interface{}, pfx string) (out []string, err error) {
 	ret := []string{}
 	switch {
 	case isStruct(t):
-		ret, err = marshalStruct(v, pfx)
+		ret, err = marshalStruct(v, "")
 	case isMap(t):
-		ret, err = marshalMap(v, pfx)
+		ret, err = marshalMap(v, "")
 	default:
 		return nil, errors.New("not struct or map")
 	}
