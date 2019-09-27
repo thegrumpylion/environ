@@ -12,13 +12,13 @@ import (
 	"unicode"
 )
 
-// MarshalEnv marshals input map or struct to a string slice of form key=value
-func MarshalEnv(i interface{}) (out []string, err error) {
+// Marshal marshals input map or struct to a string slice of form key=value
+func Marshal(i interface{}) (out []string, err error) {
 	return marshal(i, "")
 }
 
-// MarshalEnvMap marshals input map or struct to a map
-func MarshalEnvMap(i interface{}) (m map[string]string, err error) {
+// MarshalMap marshals input map or struct to a map
+func MarshalMap(i interface{}) (m map[string]string, err error) {
 	m = map[string]string{}
 	env, err := marshal(i, "")
 	for _, e := range env {
@@ -30,9 +30,9 @@ func MarshalEnvMap(i interface{}) (m map[string]string, err error) {
 	return
 }
 
-// MarshalEnvAndSet marshals input map or struct and the sets all values to the environment
-func MarshalEnvAndSet(i interface{}) error {
-	m, err := MarshalEnvMap(i)
+// MarshalAndSet marshals input map or struct and the sets all values to the environment
+func MarshalAndSet(i interface{}) error {
+	m, err := MarshalMap(i)
 	if err != nil {
 		return err
 	}
@@ -45,13 +45,13 @@ func MarshalEnvAndSet(i interface{}) error {
 	return nil
 }
 
-// MarshalEnvPfx marshals input map or struct to a string slice of form key=value. the keys are prefixed with pfx.
-func MarshalEnvPfx(i interface{}, pfx string) (out []string, err error) {
+// MarshalPfx marshals input map or struct to a string slice of form key=value. the keys are prefixed with pfx.
+func MarshalPfx(i interface{}, pfx string) (out []string, err error) {
 	return marshal(i, pfx)
 }
 
-// MarshalEnvMapPfx marshals input map or struct to a map. the keys are prefixed with pfx.
-func MarshalEnvMapPfx(i interface{}, pfx string) (m map[string]string, err error) {
+// MarshalMapPfx marshals input map or struct to a map. the keys are prefixed with pfx.
+func MarshalMapPfx(i interface{}, pfx string) (m map[string]string, err error) {
 	m = map[string]string{}
 	env, err := marshal(i, pfx)
 	for _, e := range env {
@@ -63,9 +63,9 @@ func MarshalEnvMapPfx(i interface{}, pfx string) (m map[string]string, err error
 	return
 }
 
-// MarshalEnvPfxAndSet marshals input map or struct and the sets all values to the environment. the keys are prefixed with pfx.
-func MarshalEnvPfxAndSet(i interface{}, pfx string) error {
-	m, err := MarshalEnvMapPfx(i, pfx)
+// MarshalPfxAndSet marshals input map or struct and the sets all values to the environment. the keys are prefixed with pfx.
+func MarshalPfxAndSet(i interface{}, pfx string) error {
+	m, err := MarshalMapPfx(i, pfx)
 	if err != nil {
 		return err
 	}

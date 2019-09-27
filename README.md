@@ -15,7 +15,7 @@ conf := &struct {
     Port int
 }{}
 
-environ.UnmarshalEnv(conf, env)
+environ.Unmarshal(conf, env)
 
 fmt.Printf("Host: %s:%d\n", conf.Addr, conf.Port)
 ```
@@ -34,7 +34,7 @@ conf := &struct {
     Port int
 }{}
 
-environ.UnmarshalEnviron(conf)
+environ.UnmarshalOS(conf)
 
 fmt.Printf("Host: %s:%d\n", conf.Addr, conf.Port)
 ```
@@ -44,7 +44,7 @@ $ ADDR=localhost PORT=8099 ./example
 Host: localhost:8099
 ```
 
-`environ.UnmarshalEnviron(var)` is equivalent of calling `environ.UnmarshalEnv(var, os.Environ())`
+`environ.UnmarshalOS(var)` is equivalent of calling `environ.Unmarshal(var, os.Environ())`
 
 ### Namespacing with prefixes
 
@@ -61,7 +61,7 @@ conf := &struct {
     Port int
 }{}
 
-environ.UnmarshalEnvPfx(conf, env, "_PFX_")
+environ.UnmarshalPfx(conf, env, "_PFX_")
 
 fmt.Printf("Host: %s:%d\n", conf.Addr, conf.Port)
 ```
@@ -86,7 +86,7 @@ conf := &struct {
 
 fmt.Println("Before", os.Environ())
 
-environ.UnmarshalEnvironAndUnset(conf)
+environ.UnmarshalOSAndUnset(conf)
 
 fmt.Println("After", os.Environ())
 ```

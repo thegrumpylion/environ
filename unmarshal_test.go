@@ -57,7 +57,7 @@ func TestUnmarshalKitchenSink(t *testing.T) {
 		env = append(env, k+"="+v)
 	}
 
-	err := UnmarshalEnv(out, env)
+	err := Unmarshal(out, env)
 	if err != nil {
 		t.Fatalf("err: %v\n", err)
 	}
@@ -101,12 +101,12 @@ func TestUnmarshalKitchenSink(t *testing.T) {
 	require.Equal(arr, out.ArrList)
 
 	// now, reverse it
-	ret, err := MarshalEnv(out)
+	ret, err := Marshal(out)
 	require.Nil(err)
 	require.ElementsMatch(env, ret)
 }
 
-func TestUnmarshalEnv(t *testing.T) {
+func TestUnmarshal(t *testing.T) {
 
 	env := []string{
 		"ADDR=localhost",
@@ -116,7 +116,7 @@ func TestUnmarshalEnv(t *testing.T) {
 		Addr string
 		Port int
 	}{}
-	err := UnmarshalEnv(conf, env)
+	err := Unmarshal(conf, env)
 
 	require := require.New(t)
 
@@ -125,7 +125,7 @@ func TestUnmarshalEnv(t *testing.T) {
 	require.Equal(8080, conf.Port)
 }
 
-func TestUnmarshalEnvPfx(t *testing.T) {
+func TestUnmarshalPfx(t *testing.T) {
 
 	env := []string{
 		"_PFX_ADDR=localhost",
@@ -135,7 +135,7 @@ func TestUnmarshalEnvPfx(t *testing.T) {
 		Addr string
 		Port int
 	}{}
-	err := UnmarshalEnvPfx(conf, env, "_PFX_")
+	err := UnmarshalPfx(conf, env, "_PFX_")
 
 	fmt.Printf("Host: %s:%d\n", conf.Addr, conf.Port)
 
@@ -146,7 +146,7 @@ func TestUnmarshalEnvPfx(t *testing.T) {
 	require.Equal(8080, conf.Port)
 }
 
-func TestUnmarshalEnviron(t *testing.T) {
+func TestUnmarshaliron(t *testing.T) {
 
 	os.Clearenv()
 	os.Setenv("ADDR", "localhost")
@@ -156,7 +156,7 @@ func TestUnmarshalEnviron(t *testing.T) {
 		Addr string
 		Port int
 	}{}
-	err := UnmarshalEnviron(conf)
+	err := UnmarshalOS(conf)
 
 	require := require.New(t)
 
@@ -166,7 +166,7 @@ func TestUnmarshalEnviron(t *testing.T) {
 	require.Len(os.Environ(), 2)
 }
 
-func TestUnmarshalEnvironUnset(t *testing.T) {
+func TestUnmarshalOSUnset(t *testing.T) {
 
 	os.Clearenv()
 	os.Setenv("ADDR", "localhost")
@@ -176,7 +176,7 @@ func TestUnmarshalEnvironUnset(t *testing.T) {
 		Addr string
 		Port int
 	}{}
-	err := UnmarshalEnvironAndUnset(conf)
+	err := UnmarshalOSAndUnset(conf)
 
 	require := require.New(t)
 
@@ -186,7 +186,7 @@ func TestUnmarshalEnvironUnset(t *testing.T) {
 	require.Len(os.Environ(), 0)
 }
 
-func TestUnmarshalEnvironPfxUnset(t *testing.T) {
+func TestUnmarshalOSPfxUnset(t *testing.T) {
 
 	os.Clearenv()
 	os.Setenv("_PFX_ADDR", "localhost")
@@ -196,7 +196,7 @@ func TestUnmarshalEnvironPfxUnset(t *testing.T) {
 		Addr string
 		Port int
 	}{}
-	err := UnmarshalEnvironPfxAndUnset(conf, "_PFX_")
+	err := UnmarshalOSPfxAndUnset(conf, "_PFX_")
 
 	require := require.New(t)
 

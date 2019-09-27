@@ -14,7 +14,7 @@ func TestMarshal(t *testing.T) {
 		"someOtherHost.net",
 		8090,
 	}
-	out, err := MarshalEnv(conf)
+	out, err := Marshal(conf)
 
 	require := require.New(t)
 
@@ -33,7 +33,7 @@ func TestMarshalMap(t *testing.T) {
 		"someOtherHost.net",
 		8090,
 	}
-	out, err := MarshalEnvMap(conf)
+	out, err := MarshalMap(conf)
 
 	require := require.New(t)
 
@@ -50,7 +50,7 @@ func TestMarshalPfx(t *testing.T) {
 		"someOtherHost.net",
 		8090,
 	}
-	out, err := MarshalEnvPfx(conf, "__PFX__")
+	out, err := MarshalPfx(conf, "__PFX__")
 
 	require := require.New(t)
 
